@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>データ可視化 体験教材</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* layout: five hands-on modules switched by tabs; each = controls on the left/top, one live figure, questions, sources */
+:root{
+  --bg:#f4f5f3; --surface:#fcfcfb; --ink:#141a1c; --ink-2:#4b5557; --ink-3:#77807f;
+  --line:#dcdfdb; --accent:#1f5fae; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --mark:#b4530a; --mid:#b9bdb9;
+  --font-display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131615; --surface:#1a1d1c; --ink:#eef0ec; --ink-2:#bcc3bf; --ink-3:#8b9390;
+    --line:#2f3533; --accent:#7fb2f0; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --mark:#f0a35c; --mid:#5a605d;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131615; --surface:#1a1d1c; --ink:#eef0ec; --ink-2:#bcc3bf; --ink-3:#8b9390;
+  --line:#2f3533; --accent:#7fb2f0; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --mark:#f0a35c; --mid:#5a605d;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.75}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1000px;margin:0 auto;padding:26px 20px 64px;display:flex;flex-direction:column;gap:20px}
+header h1{font-family:var(--font-display);font-size:clamp(25px,4vw,36px);line-height:1.25;margin:0 0 8px;text-wrap:balance}
+header p{margin:0;max-width:41em;color:var(--ink-2)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-size:13.5px;line-height:1.3;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;text-decoration:none}
+nav a[aria-current="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+nav a .no{font-variant-numeric:tabular-nums;opacity:.6;margin-right:5px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:none}
+section.on{display:block}
+h2{font-family:var(--font-display);font-size:22px;margin:0 0 4px;text-wrap:balance}
+h3{font-size:14.5px;margin:20px 0 6px}
+.aim{margin:0 0 14px;color:var(--ink-2);font-size:14px;max-width:44em}
+.meta{font-size:12.5px;color:var(--ink-3);margin:0 0 10px}
+.note{margin:8px 0 0;color:var(--ink-3);font-size:12.5px;max-width:52em}
+.two{display:grid;grid-template-columns:minmax(240px,300px) 1fr;gap:20px;align-items:start}
+.ctl{display:flex;flex-direction:column;gap:10px;font-size:13.5px}
+.ctl label{display:flex;flex-direction:column;gap:3px;font-weight:500}
+.ctl label.inline{flex-direction:row;align-items:center;gap:8px}
+select,input[type=range]{font:inherit;font-size:13.5px;width:100%}
+select{color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+input[type=range]{accent-color:var(--accent)}
+button.btn{font:inherit;font-size:14px;border:1px solid var(--ink);background:var(--ink);color:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer}
+button.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.fig{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface)}
+svg{display:block}
+svg text{font-family:var(--font-body);fill:var(--ink-2);font-size:11.5px}
+svg text.big{font-size:14px;font-weight:700;fill:var(--ink)}
+svg text.val{fill:var(--ink);font-variant-numeric:tabular-nums}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .axis{stroke:var(--ink-3);stroke-width:1}
+svg .hit{fill:transparent}
+.out{font-size:14px;margin:10px 0 0;padding:10px 12px;border-left:3px solid var(--mark);background:var(--bg);border-radius:0 8px 8px 0;max-width:46em}
+.out b{font-variant-numeric:tabular-nums}
+.big-num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+ul.q{margin:0;padding-left:1.3em;max-width:46em}
+ul.q li{margin:4px 0}
+ul.src{margin:0;padding-left:1.3em;font-size:13px;color:var(--ink-2)}
+ul.src li{overflow-wrap:anywhere}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+pre{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:5px 12px 5px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:700;color:var(--ink-2);font-size:12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:6px}
+.plan div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;background:var(--surface)}
+.plan b{display:block;font-size:13px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:4px 8px;border-radius:6px;transform:translate(-50%,-125%);display:none;font-variant-numeric:tabular-nums;z-index:3}
+@media (max-width:680px){.two{grid-template-columns:1fr}section{padding:16px 14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>データ可視化 体験教材</h1>
+  <p>図を「読む側の知覚」と「作る側の選択」から理解するための、5つの小さな実験です。どれも自分で操作して結果を確かめます。授業では画面に映して進めても、各自の端末で進めても使えます。</p>
+  <div class="plan">
+    <div><b>1 知覚の実験</b>長さ・角度・面積などを見積もり、自分の誤差を測る。目安15分</div>
+    <div><b>2 対応づけ</b>変数を軸・色・大きさに割り当て直す。目安15分</div>
+    <div><b>3 ゆがみ</b>軸や面積の取り方で印象が変わる量を数える。目安15分</div>
+    <div><b>4 要約と図</b>統計量が同じでも中身が違う4つのデータ。目安10分</div>
+    <div><b>5 色</b>データの種類と配色の組み合わせを試す。目安10分</div>
+  </div>
+</header>
+<nav id="nav" aria-label="教材の切り替え"></nav>
+
+<!-- 1 -->
+<section id="perception" aria-labelledby="h1x">
+  <h2 id="h1x">1　知覚の実験：どの表し方なら正確に読めるか</h2>
+  <p class="aim">AとBの2つの量が、5種類の表し方で出てきます。BがAの何%かを見積もってください。15問に答えると、表し方ごとの自分の誤差が出ます。</p>
+  <div class="two">
+    <div class="ctl">
+      <p class="meta" id="pProg"></p>
+      <label for="pGuess">BはAの <span><b class="big-num" id="pVal">50</b> %</span></label>
+      <input type="range" id="pGuess" min="1" max="100" step="1" value="50">
+      <button class="btn" id="pNext" type="button">決定して次へ</button>
+      <button class="btn ghost" id="pReset" type="button">最初からやり直す</button>
+    </div>
+    <div>
+      <div class="fig" id="pStage"></div>
+      <p class="note" id="pEnc"></p>
+    </div>
+  </div>
+  <h3>結果：表し方ごとの平均誤差</h3>
+  <div class="fig" id="pResult"></div>
+  <div class="out" id="pOut">15問に答えると、ここに自分の結果と解説が出ます。</div>
+  <h3>考えてみよう</h3>
+  <ul class="q">
+    <li>誤差が小さかった表し方と大きかった表し方は、予想どおりでしたか。</li>
+    <li>円グラフは角度、バブルチャートは面積で量を表します。それぞれどんな場面なら使ってよいでしょうか。</li>
+    <li>隣の人と結果を比べてください。順位は同じでしたか。3問ずつでは偶然の影響も大きい点に注意します。</li>
+  </ul>
+  <h3>出典</h3>
+  <ul class="src">
+    <li>Cleveland, W. S., McGill, R. (1984) <a href="https://doi.org/10.1080/01621459.1984.10478080">Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods</a>. Journal of the American Statistical Association 79(387), 531–554.</li>
+    <li>Heer, J., Bostock, M. (2010) <a href="https://doi.org/10.1145/1753326.1753357">Crowdsourcing Graphical Perception</a>. CHI 2010.</li>
+    <li>この教材は両研究の課題を簡略化した体験版です。画面の色や大きさは較正していないため、研究の再現にはなりません。</li>
+  </ul>
+</section>
+
+<!-- 2 -->
+<section id="mapping" aria-labelledby="h2x">
+  <h2 id="h2x">2　対応づけ：同じデータから別の図を作る</h2>
+  <p class="aim">図は「データの列」を「見た目の性質」に割り当てたものです。東京の月ごとの気温と降水量（12行）を使い、割り当てを変えると何が見えるかを確かめます。</p>
+  <div class="two">
+    <div class="ctl">
+      <label for="mMark">図形<select id="mMark"><option value="point">点</option><option value="line">線（月の順に結ぶ）</option><option value="bar">棒</option></select></label>
+      <label for="mX">横の位置<select id="mX"><option value="m">月</option><option value="t">平均気温</option><option value="p">降水量</option></select></label>
+      <label for="mY">縦の位置<select id="mY"><option value="t">平均気温</option><option value="p">降水量</option></select></label>
+      <label for="mC">色<select id="mC"><option value="">割り当てない</option><option value="s">季節</option><option value="t">平均気温</option><option value="p">降水量</option></select></label>
+      <label for="mS">大きさ<select id="mS"><option value="">割り当てない</option><option value="p">降水量</option><option value="t">平均気温</option></select></label>
+    </div>
+    <div>
+      <div class="fig" id="mFig"></div>
+      <div class="legend" id="mLeg"></div>
+      <p class="note" id="mNote"></p>
+      <pre id="mSpec" aria-label="文法として書いた指定"></pre>
+    </div>
+  </div>
+  <h3>考えてみよう</h3>
+  <ul class="q">
+    <li>横を平均気温、縦を降水量、図形を線にしてください。1年の動きはどんな形になりますか。月を横に置いた図では見えなかったことは何でしょう。</li>
+    <li>同じ列を位置と色の両方に割り当てると、読みやすくなりますか、情報が増えていないだけですか。</li>
+    <li>「梅雨と秋雨のどちらが多いか」を伝えるなら、どの割り当てが最も速く伝わりますか。</li>
+  </ul>
+  <h3>出典</h3>
+  <ul class="src">
+    <li>データ：気象庁の平年値（1991〜2020年）、東京。平年値の定義は<a href="https://ds.data.jma.go.jp/gmd/cpd/monitor/normal/about_normal.html">気象庁の解説</a>。月別の値は<a href="https://weather.time-j.net/stations/jp/tokyo/">転載ページ</a>で確認し、年間値（平均15.8℃、降水量1598.2mm）と合うことを確かめました。</li>
+    <li>考え方：Wilkinson, L. (2005) The Grammar of Graphics, 2nd ed. Springer.</li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="distortion" aria-labelledby="h3x">
+  <h2 id="h3x">3　ゆがみ：印象はどれだけ変えられるか</h2>
+  <p class="aim">数値を変えなくても、軸や面積の取り方で印象は変わります。変わった量を数字で確かめます。</p>
+
+  <h3>3-1　棒グラフの軸をどこから始めるか</h3>
+  <div class="two">
+    <div class="ctl">
+      <label for="dBase">縦軸の始まり <span><b id="dBaseV">0</b> mm</span></label>
+      <input type="range" id="dBase" min="0" max="160" step="10" value="0">
+      <div class="out" id="dOutA" style="margin-top:0"></div>
+    </div>
+    <div class="fig" id="dFigA"></div>
+  </div>
+
+  <h3>3-2　円の大きさを半径で決めるか、面積で決めるか</h3>
+  <div class="two">
+    <div class="ctl">
+      <label for="dArea">数値を割り当てる先<select id="dArea"><option value="r">半径</option><option value="a">面積</option></select></label>
+      <div class="out" id="dOutB" style="margin-top:0"></div>
+    </div>
+    <div class="fig" id="dFigB"></div>
+  </div>
+
+  <h3>3-3　目盛りの違う2本の線を重ねる</h3>
+  <div class="two">
+    <div class="ctl">
+      <label for="dLo">右の軸（降水量）の下端 <span><b id="dLoV">0</b> mm</span></label>
+      <input type="range" id="dLo" min="-600" max="50" step="10" value="0">
+      <label for="dHi">右の軸（降水量）の上端 <span><b id="dHiV">250</b> mm</span></label>
+      <input type="range" id="dHi" min="240" max="900" step="10" value="250">
+      <div class="out" id="dOutC" style="margin-top:0"></div>
+    </div>
+    <div>
+      <div class="fig" id="dFigC"></div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>平均気温（左の軸）</span><span><i style="background:var(--s2)"></i>降水量（右の軸）</span></div>
+      <p class="note">下は同じデータを2段に分けた図です。軸を動かしても、こちらの読み取りは変わりません。</p>
+      <div class="fig" id="dFigD"></div>
+    </div>
+  </div>
+
+  <h3>考えてみよう</h3>
+  <ul class="q">
+    <li>棒グラフと折れ線グラフでは、軸を0から始めるべきかどうかの判断が違います。なぜでしょう。</li>
+    <li>3-3で、2本の線が「同じように動いている」ように見える設定と、「逆に動いている」ように見える設定を作ってください。</li>
+    <li>報道や資料で見た図のうち、この3つのどれかに当てはまるものを1つ探してください。</li>
+  </ul>
+  <h3>出典</h3>
+  <ul class="src">
+    <li>ゆがみの比（Lie Factor）：Tufte, E. R. (1983) The Visual Display of Quantitative Information. Graphics Press.</li>
+    <li>データは教材2と同じ、気象庁の東京の平年値です。</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section id="summary" aria-labelledby="h4x">
+  <h2 id="h4x">4　要約と図：数値が同じなら中身も同じか</h2>
+  <p class="aim">4つのデータは、平均・分散・相関係数・回帰直線がほぼ同じです。授業では先に図を隠し、数値だけを見て中身を予想してから図を開きます。</p>
+  <div class="ctl" style="margin-bottom:12px"><label class="inline" for="aHide"><input type="checkbox" id="aHide"> 図を隠して数値だけにする</label></div>
+  <div style="overflow-x:auto"><table id="aTable"></table></div>
+  <div class="grid4" id="aFigs" style="margin-top:14px"></div>
+  <h3>考えてみよう</h3>
+  <ul class="q">
+    <li>4つのうち、直線を当てはめてよいのはどれでしょう。そう判断した理由を図から説明してください。</li>
+    <li>ⅢとⅣでは、1つの点が結果を大きく動かしています。その点を除くと何が変わりますか。</li>
+    <li>自分の実験や調査で、図を描かずに数値だけで判断した場面はありましたか。</li>
+  </ul>
+  <h3>出典</h3>
+  <ul class="src">
+    <li>Anscombe, F. J. (1973) <a href="https://doi.org/10.1080/00031305.1973.10478966">Graphs in Statistical Analysis</a>. The American Statistician 27(1), 17–21. 表の統計量はこのページ内で計算しています。</li>
+  </ul>
+</section>
+
+<!-- 5 -->
+<section id="color" aria-labelledby="h5x">
+  <h2 id="h5x">5　色：データの種類に合う配色を選ぶ</h2>
+  <p class="aim">色には、区別する・大小を表す・基準からの上下を表す、という3つの仕事があります。データと配色の組み合わせを変えて、合う場合と合わない場合を見比べます。</p>
+  <div class="two">
+    <div class="ctl">
+      <label for="cData">色で表すデータ<select id="cData"><option value="s">季節（分類）</option><option value="t">平均気温（大小）</option><option value="d">年平均との差（上下）</option></select></label>
+      <label for="cPal">配色<select id="cPal"><option value="cat">色相で区別する配色</option><option value="seq">1色の濃淡</option><option value="div">2色に分かれる配色</option><option value="rain">虹色</option></select></label>
+      <label for="cCvd">色覚の簡易シミュレーション<select id="cCvd"><option value="">なし</option><option value="protan">1型（P型）</option><option value="deutan">2型（D型）</option><option value="tritan">3型（T型）</option><option value="gray">明るさだけ</option></select></label>
+      <div class="out" id="cOut" style="margin-top:0"></div>
+    </div>
+    <div>
+      <div class="fig" id="cFig"></div>
+      <p class="note">各マスの数字は平均気温（℃）です。色だけに頼らず、値や名前を併記できるかも確かめてください。</p>
+    </div>
+  </div>
+  <h3>考えてみよう</h3>
+  <ul class="q">
+    <li>平均気温に虹色を当て、「明るさだけ」に切り替えてください。大小の順は読み取れますか。</li>
+    <li>「年平均との差」に1色の濃淡を当てると、失われる情報は何ですか。</li>
+    <li>色覚のシミュレーションを切り替えても区別できる配色は、どれでしたか。</li>
+  </ul>
+  <h3>出典</h3>
+  <ul class="src">
+    <li>配色の3分類：Brewer, C. A. (1994) Color Use Guidelines for Mapping and Visualization. In: Visualization in Modern Cartography. Pergamon.</li>
+    <li>色覚のシミュレーションは色変換行列による近似で、実際の見え方を正確に再現するものではありません。</li>
+  </ul>
+</section>
+</div>
+<div class="tip" id="tip"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="f-protan"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/></filter>
+  <filter id="f-deutan"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/></filter>
+  <filter id="f-tritan"><feColorMatrix type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"/></filter>
+  <filter id="f-gray"><feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/></filter>
+</defs></svg>
+
+<script>
+(function(){
+"use strict";
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+var tip=$('tip');
+document.addEventListener('mousemove',function(ev){
+  var t=ev.target.closest&&ev.target.closest('[data-tip]');
+  if(!t){ tip.style.display='none'; return; }
+  tip.textContent=t.getAttribute('data-tip'); tip.style.left=ev.clientX+'px'; tip.style.top=ev.clientY+'px'; tip.style.display='block';
+});
+
+/* ---------- tabs (hash routing) ---------- */
+var MODS=[['perception','知覚の実験'],['mapping','対応づけ'],['distortion','ゆがみ'],['summary','要約と図'],['color','色']];
+function route(){
+  var h=location.hash.replace('#',''), cur=MODS.some(function(m){return m[0]===h;})?h:MODS[0][0];
+  MODS.forEach(function(m){ $(m[0]).classList.toggle('on', m[0]===cur); });
+  $('nav').innerHTML=MODS.map(function(m,i){return '<a href="#'+m[0]+'" aria-current="'+(m[0]===cur)+'"><span class="no">'+(i+1)+'</span>'+m[1]+'</a>';}).join('');
+}
+window.addEventListener('hashchange',route); route();
+
+/* ---------- data: Tokyo normals 1991–2020 (JMA) ---------- */
+var T=[5.4,6.1,9.4,14.3,18.8,21.9,25.7,26.9,23.3,18.0,12.5,7.7];
+var P=[59.7,56.5,116.0,133.7,139.7,167.8,156.2,154.7,224.9,234.8,96.3,57.9];
+var SEASON=['冬','冬','春','春','春','夏','夏','夏','秋','秋','秋','冬'], SCOL={'春':'var(--s3)','夏':'var(--s2)','秋':'var(--s4)','冬':'var(--s1)'};
+var ROWS=T.map(function(t,i){ return {m:i+1,t:t,p:P[i],s:SEASON[i]}; });
+var TMEAN=T.reduce(function(a,b){return a+b;},0)/12;
+var VAR={m:{name:'月',unit:'月',min:1,max:12,ticks:[1,2,3,4,5,6,7,8,9,10,11,12],col:'month'},t:{name:'平均気温',unit:'℃',min:0,max:30,ticks:[0,5,10,15,20,25,30],col:'temp'},p:{name:'降水量',unit:'mm',min:0,max:250,ticks:[0,50,100,150,200,250],col:'precip'},s:{name:'季節',col:'season'}};
+
+/* ---------- 1 perception ---------- */
+var ENC={pos:'そろった基線からの高さ',len:'基線のそろわない長さ',ang:'角度',area:'面積',shade:'色の濃さ'}, ENC_ORDER=['pos','len','ang','area','shade'];
+var RATIOS=[0.2,0.27,0.35,0.42,0.5,0.58,0.65,0.73,0.8], pst;
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pInit(){
+  var tr=[]; ENC_ORDER.forEach(function(e){ shuffle(RATIOS.slice()).slice(0,3).forEach(function(r){ tr.push({enc:e,r:r,seed:Math.random()}); }); });
+  pst={trials:shuffle(tr),i:0,ans:[]}; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult();
+}
+function wedge(cx,cy,R,a0,a1){ var x0=cx+R*Math.cos(a0),y0=cy+R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1); return 'M'+cx+' '+cy+'L'+x0.toFixed(1)+' '+y0.toFixed(1)+'A'+R+' '+R+' 0 '+((a1-a0)>Math.PI?1:0)+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+'Z'; }
+function pDraw(){
+  var done=pst.i>=pst.trials.length;
+  $('pProg').textContent=done?'15問すべて終わりました':('第 '+(pst.i+1)+' 問 / 全 '+pst.trials.length+' 問');
+  $('pNext').disabled=done; $('pGuess').disabled=done;
+  if(done){ $('pStage').innerHTML='<svg viewBox="0 0 360 210" width="100%" style="max-width:520px;margin:0 auto"><text class="big" x="180" y="105" text-anchor="middle">おつかれさまでした。下に結果があります。</text></svg>'; $('pEnc').textContent=''; return; }
+  var t=pst.trials[pst.i], r=t.r, s='<svg viewBox="0 0 360 210" width="100%" style="max-width:520px;margin:0 auto" role="img" aria-label="AとBの2つの量">', f='fill="var(--s1)"';
+  if(t.enc==='pos'){ s+='<line class="axis" x1="60" x2="300" y1="170" y2="170"/><rect x="100" y="30" width="46" height="140" '+f+'/><rect x="214" y="'+(170-140*r)+'" width="46" height="'+(140*r)+'" '+f+'/>'; }
+  else if(t.enc==='len'){ var hb=130*r, off=18+t.seed*(130-hb); s+='<rect x="100" y="24" width="46" height="130" '+f+'/><rect x="214" y="'+(184-off-hb)+'" width="46" height="'+hb+'" '+f+'/>'; }
+  else if(t.enc==='ang'){ var A=(125+t.seed*40)*Math.PI/180, a0=t.seed*6.28, b0=(1-t.seed)*6.28; s+='<path d="'+wedge(105,100,62,a0,a0+A)+'" '+f+'/><path d="'+wedge(250,100,62,b0,b0+A*r)+'" '+f+'/>'; }
+  else if(t.enc==='area'){ s+='<circle cx="105" cy="100" r="64" '+f+'/><circle cx="250" cy="100" r="'+(64*Math.sqrt(r)).toFixed(1)+'" '+f+'/>'; }
+  else { s+='<rect x="60" y="50" width="90" height="100" '+f+'/><rect x="206" y="50" width="90" height="100" '+f+' fill-opacity="'+r+'"/><rect x="206" y="50" width="90" height="100" fill="none" stroke="var(--line)"/>'; }
+  s+='<text class="big" x="'+(t.enc==='shade'?105:(t.enc==='pos'||t.enc==='len'?123:105))+'" y="202" text-anchor="middle">A</text><text class="big" x="'+(t.enc==='shade'?251:(t.enc==='pos'||t.enc==='len'?237:250))+'" y="202" text-anchor="middle">B</text></svg>';
+  $('pStage').innerHTML=s; $('pEnc').textContent='表し方：'+ENC[t.enc]+(t.enc==='shade'?'（Aを100%の濃さとします）':'');
+}
+function pResult(){
+  var by={}; pst.ans.forEach(function(a){ (by[a.enc]=by[a.enc]||[]).push(Math.abs(a.g-a.r*100)); });
+  var rows=ENC_ORDER.filter(function(e){return by[e];}).map(function(e){ var v=by[e]; return {e:e,n:v.length,mae:v.reduce(function(a,b){return a+b;},0)/v.length}; }).sort(function(a,b){return a.mae-b.mae;});
+  var W=520,rh=30,L=170,R=60,H=Math.max(1,rows.length)*rh+14, max=Math.max(10,Math.max.apply(null,rows.map(function(r){return r.mae;}).concat([0])));
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:640px;min-width:300px" role="img" aria-label="表し方ごとの平均誤差">';
+  if(!rows.length) s+='<text x="'+(W/2)+'" y="'+(H/2+4)+'" text-anchor="middle">まだ回答がありません</text>';
+  rows.forEach(function(r,i){ var y=8+i*rh, w=(r.mae/max)*(W-L-R); s+='<text x="'+(L-8)+'" y="'+(y+15)+'" text-anchor="end" class="val">'+ENC[r.e]+'</text><rect x="'+L+'" y="'+(y+3)+'" width="'+Math.max(1,w)+'" height="16" rx="3" fill="var(--s1)"/><text class="val" x="'+(L+w+6)+'" y="'+(y+15)+'">'+r.mae.toFixed(1)+' ポイント</text><rect class="hit" data-tip="'+ENC[r.e]+'：'+r.n+'問の平均誤差 '+r.mae.toFixed(1)+' ポイント" x="0" y="'+y+'" width="'+W+'" height="'+rh+'"/>'; });
+  $('pResult').innerHTML=s+'</svg>';
+  if(pst.i>=pst.trials.length && rows.length){
+    $('pOut').innerHTML='あなたの誤差が最も小さかったのは<b>「'+ENC[rows[0].e]+'」</b>（平均'+rows[0].mae.toFixed(1)+'ポイント）、最も大きかったのは<b>「'+ENC[rows[rows.length-1].e]+'」</b>（平均'+rows[rows.length-1].mae.toFixed(1)+'ポイント）でした。Cleveland と McGill の実験では、そろった軸上の位置が最も正確で、長さ、角度、面積、濃淡の順に誤差が大きくなる傾向が報告されています。自分の順位と比べてください。';
+  } else { $('pOut').textContent='15問に答えると、ここに自分の結果と解説が出ます。回答済み：'+pst.ans.length+'問'; }
+}
+$('pGuess').addEventListener('input',function(ev){ $('pVal').textContent=ev.target.value; });
+$('pNext').addEventListener('click',function(){ if(pst.i>=pst.trials.length) return; var t=pst.trials[pst.i]; pst.ans.push({enc:t.enc,r:t.r,g:+$('pGuess').value}); pst.i++; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult(); });
+$('pReset').addEventListener('click',pInit);
+pInit();
+
+/* ---------- 2 mapping ---------- */
+function mDraw(){
+  var mark=$('mMark').value, xk=$('mX').value, yk=$('mY').value, ck=$('mC').value, sk=$('mS').value, note='';
+  if(mark==='bar' && xk!=='m'){ mark='point'; note='棒は、月のように並びの決まった項目を横に置くときに使います。横が数量なので点で描きました。'; }
+  var X=VAR[xk], Yv=VAR[yk], W=560,H=340,L=52,R=20,Tp=16,B=44, pw=W-L-R, ph=H-Tp-B;
+  function sx(v){ return xk==='m' ? L+(v-0.5)/12*pw : L+(v-X.min)/(X.max-X.min)*pw; }
+  function sy(v){ return Tp+ph-(v-Yv.min)/(Yv.max-Yv.min)*ph; }
+  function col(d){ if(!ck) return 'var(--s1)'; if(ck==='s') return SCOL[d.s]; var V=VAR[ck], q=(d[ck]-V.min)/(V.max-V.min); return 'color-mix(in oklab,var(--s1) '+Math.round(15+85*q)+'%,var(--surface))'; }
+  function rad(d){ if(!sk) return 6; var V=VAR[sk]; return 4+10*Math.sqrt(Math.max(0,(d[sk]-V.min)/(V.max-V.min))); }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:420px" role="img" aria-label="割り当てに応じた図">';
+  Yv.ticks.forEach(function(t){ s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(t)+'" y2="'+sy(t)+'"/><text x="'+(L-6)+'" y="'+(sy(t)+4)+'" text-anchor="end">'+t+'</text>'; });
+  X.ticks.forEach(function(t){ s+='<text x="'+sx(t)+'" y="'+(H-B+16)+'" text-anchor="middle">'+t+'</text>'; });
+  s+='<text x="'+(L+pw/2)+'" y="'+(H-6)+'" text-anchor="middle">'+X.name+'（'+X.unit+'）</text><text x="12" y="'+(Tp+ph/2)+'" text-anchor="middle" transform="rotate(-90 12 '+(Tp+ph/2)+')">'+Yv.name+'（'+Yv.unit+'）</text>';
+  if(mark==='bar'){ ROWS.forEach(function(d){ var bw=pw/12-6, y=sy(d[yk]); s+='<rect x="'+(sx(d.m)-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+(Tp+ph-y)+'" rx="3" fill="'+col(d)+'"/>'; }); }
+  if(mark==='line'){ s+='<path d="'+ROWS.map(function(d,i){return (i?'L':'M')+sx(d[xk]).toFixed(1)+' '+sy(d[yk]).toFixed(1);}).join('')+(xk!=='m'?'Z':'')+'" fill="none" stroke="var(--ink-3)" stroke-width="1.5"/>'; }
+  ROWS.forEach(function(d){
+    var x=sx(d[xk]), y=sy(d[yk]);
+    if(mark!=='bar'){ s+='<circle cx="'+x+'" cy="'+y+'" r="'+rad(d)+'" fill="'+col(d)+'" stroke="var(--surface)" stroke-width="2"/>'; if(xk!=='m') s+='<text x="'+(x+rad(d)+3)+'" y="'+(d.m%2?(y-rad(d)-1):(y+rad(d)+11))+'">'+d.m+'月</text>'; }
+    s+='<circle class="hit" data-tip="'+d.m+'月：平均気温 '+d.t+'℃、降水量 '+d.p+'mm（'+d.s+'）" cx="'+x+'" cy="'+(mark==='bar'?(y+Tp+ph)/2:y)+'" r="'+(mark==='bar'?26:16)+'"/>';
+  });
+  $('mFig').innerHTML=s+'</svg>';
+  var leg=''; if(ck==='s') leg=['春','夏','秋','冬'].map(function(k){return '<span><i style="background:'+SCOL[k]+'"></i>'+k+'</span>';}).join(''); else if(ck) leg='<span><i style="background:color-mix(in oklab,var(--s1) 15%,var(--surface));border:1px solid var(--line)"></i>'+VAR[ck].name+'が小さい</span><span><i style="background:var(--s1)"></i>大きい</span>';
+  if(sk) leg+='<span>円の大きさ：'+VAR[sk].name+'</span>';
+  $('mLeg').innerHTML=leg; $('mNote').textContent=note;
+  var geom={point:'geom_point()',line:(xk==='m'?'geom_line()':'geom_path()')+' + geom_point()',bar:'geom_col()'}[mark];
+  var aes=['x = '+X.col,'y = '+Yv.col]; if(ck) aes.push((mark==='bar'?'fill':'color')+' = '+VAR[ck].col); if(sk&&mark!=='bar') aes.push('size = '+VAR[sk].col);
+  $('mSpec').textContent='文法として書くと（ggplot2の書き方）\nggplot(tokyo, aes('+aes.join(', ')+')) + '+geom;
+}
+['mMark','mX','mY','mC','mS'].forEach(function(id){ $(id).addEventListener('change',mDraw); });
+mDraw();
+
+/* ---------- 3 distortion ---------- */
+function dA(){
+  var base=+$('dBase').value, items=[['6月',P[5]],['9月',P[8]],['10月',P[9]]], top=250, W=420,H=260,L=44,R=14,Tp=14,B=30, pw=W-L-R, ph=H-Tp-B;
+  $('dBaseV').textContent=base;
+  function sy(v){ return Tp+ph-(v-base)/(top-base)*ph; }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:300px" role="img" aria-label="東京の6月・9月・10月の降水量">';
+  for(var t=Math.ceil(base/50)*50; t<=top; t+=50){ s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(t)+'" y2="'+sy(t)+'"/><text x="'+(L-6)+'" y="'+(sy(t)+4)+'" text-anchor="end">'+t+'</text>'; }
+  if(base%50) s+='<text x="'+(L-6)+'" y="'+(Tp+ph+4)+'" text-anchor="end">'+base+'</text>';
+  items.forEach(function(it,i){ var bw=70, x=L+pw*(i+0.5)/3-bw/2, y=sy(it[1]); s+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+(Tp+ph-y)+'" rx="3" fill="var(--s1)"/><text class="val" x="'+(x+bw/2)+'" y="'+(y-5)+'" text-anchor="middle">'+it[1]+'</text><text x="'+(x+bw/2)+'" y="'+(H-10)+'" text-anchor="middle">'+it[0]+'</text>'; });
+  $('dFigA').innerHTML=s+'</svg>';
+  var real=P[9]/P[5], vis=(P[9]-base)/(P[5]-base), lie=((vis-1)/(real-1));
+  $('dOutA').innerHTML='10月は6月の <b>'+real.toFixed(2)+'倍</b>（実際）<br>棒の高さでは <b>'+vis.toFixed(2)+'倍</b>（見た目）<br>ゆがみの比 <b>'+lie.toFixed(1)+'</b>'+(base===0?'。1.0は実際どおりです。':'。差が実際の'+lie.toFixed(1)+'倍に見えています。');
+}
+function dB(){
+  var mode=$('dArea').value, a=P[1], b=P[9], ratio=b/a, R0=22, rb=mode==='r'?R0*ratio:R0*Math.sqrt(ratio), W=420,H=230;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:300px" role="img" aria-label="2月と10月の降水量を円で比べる"><circle cx="90" cy="'+(H-36-R0)+'" r="'+R0+'" fill="var(--s1)"/><circle cx="'+(mode==='r'?280:270)+'" cy="'+(H-36-Math.min(rb,92))+'" r="'+Math.min(rb,92)+'" fill="var(--s1)"/><text x="90" y="'+(H-12)+'" text-anchor="middle">2月 '+a+'mm</text><text x="275" y="'+(H-12)+'" text-anchor="middle">10月 '+b+'mm</text></svg>';
+  $('dFigB').innerHTML=s;
+  var visArea=mode==='r'?ratio*ratio:ratio;
+  $('dOutB').innerHTML='10月は2月の <b>'+ratio.toFixed(1)+'倍</b>（実際）<br>円の面積では <b>'+visArea.toFixed(1)+'倍</b>（見た目）'+(mode==='r'?'<br>半径に割り当てると、面積は比の2乗で増えます。'+(rb>92?'円が枠に収まらないため縮めて描いています。':''):'<br>面積に割り当てると、実際の比と一致します。');
+}
+function dC(){
+  var lo=+$('dLo').value, hi=+$('dHi').value; $('dLoV').textContent=lo; $('dHiV').textContent=hi;
+  var W=520,H=250,L=40,R=46,Tp=12,B=26, pw=W-L-R, ph=H-Tp-B;
+  function sx(i){ return L+(i+0.5)/12*pw; } function syT(v){ return Tp+ph-(v/30)*ph; } function syP(v){ return Tp+ph-((v-lo)/(hi-lo))*ph; }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:380px" role="img" aria-label="気温と降水量を2つの軸で重ねた図"><clipPath id="clipC"><rect x="'+L+'" y="'+Tp+'" width="'+pw+'" height="'+ph+'"/></clipPath>';
+  [0,10,20,30].forEach(function(t){ s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+syT(t)+'" y2="'+syT(t)+'"/><text x="'+(L-6)+'" y="'+(syT(t)+4)+'" text-anchor="end">'+t+'℃</text><text x="'+(W-R+6)+'" y="'+(syT(t)+4)+'">'+Math.round(lo+(hi-lo)*t/30)+'</text>'; });
+  for(var i=0;i<12;i++) s+='<text x="'+sx(i)+'" y="'+(H-8)+'" text-anchor="middle">'+(i+1)+'</text>';
+  s+='<g clip-path="url(#clipC)"><path d="'+T.map(function(v,i){return (i?'L':'M')+sx(i)+' '+syT(v).toFixed(1);}).join('')+'" fill="none" stroke="var(--s1)" stroke-width="2.5"/><path d="'+P.map(function(v,i){return (i?'L':'M')+sx(i)+' '+syP(v).toFixed(1);}).join('')+'" fill="none" stroke="var(--s2)" stroke-width="2.5"/></g></svg>';
+  $('dFigC').innerHTML=s;
+  var cross=0; for(i=0;i<11;i++){ var d0=syT(T[i])-syP(P[i]), d1=syT(T[i+1])-syP(P[i+1]); if(d0*d1<0) cross++; }
+  $('dOutC').innerHTML='2本の線が交わる回数：<b>'+cross+'回</b><br>交わる位置や上下の関係は、右の軸の取り方で決まります。データが決めているわけではありません。';
+}
+function dD(){
+  var W=520,H=230,L=40,R=46,Tp=10,B=24,gap=16, pw=W-L-R, h=(H-Tp-B-gap)/2;
+  function sx(i){ return L+(i+0.5)/12*pw; }
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:380px" role="img" aria-label="気温と降水量を上下2段に分けた図">';
+  [[T,30,'var(--s1)','平均気温（℃）',[0,15,30]],[P,250,'var(--s2)','降水量（mm）',[0,125,250]]].forEach(function(c,k){
+    var y0=Tp+k*(h+gap); function sy(v){ return y0+h-(v/c[1])*h; }
+    c[4].forEach(function(t){ s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(t)+'" y2="'+sy(t)+'"/><text x="'+(L-6)+'" y="'+(sy(t)+4)+'" text-anchor="end">'+t+'</text>'; });
+    s+='<path d="'+c[0].map(function(v,i){return (i?'L':'M')+sx(i)+' '+sy(v).toFixed(1);}).join('')+'" fill="none" stroke="'+c[2]+'" stroke-width="2.5"/><text x="'+(L+6)+'" y="'+(y0+12)+'">'+c[3]+'</text>';
+    c[0].forEach(function(v,i){ s+='<rect class="hit" data-tip="'+(i+1)+'月：'+c[3].replace(/（.*/,'')+' '+v+'" x="'+(sx(i)-pw/24)+'" y="'+y0+'" width="'+(pw/12)+'" height="'+h+'"/>'; });
+  });
+  for(var i=0;i<12;i++) s+='<text x="'+sx(i)+'" y="'+(H-6)+'" text-anchor="middle">'+(i+1)+'</text>';
+  $('dFigD').innerHTML=s+'</svg>';
+}
+$('dBase').addEventListener('input',dA); $('dArea').addEventListener('change',dB); $('dLo').addEventListener('input',dC); $('dHi').addEventListener('input',dC);
+dA(); dB(); dC(); dD();
+
+/* ---------- 4 Anscombe ---------- */
+var X123=[10,8,13,9,11,14,6,4,12,7,5];
+var AQ=[['Ⅰ',X123,[8.04,6.95,7.58,8.81,8.33,9.96,7.24,4.26,10.84,4.82,5.68]],['Ⅱ',X123,[9.14,8.14,8.74,8.77,9.26,8.10,6.13,3.10,9.13,7.26,4.74]],['Ⅲ',X123,[7.46,6.77,12.74,7.11,7.81,8.84,6.08,5.39,8.15,6.42,5.73]],['Ⅳ',[8,8,8,8,8,8,8,19,8,8,8],[6.58,5.76,7.71,8.84,8.47,7.04,5.25,12.50,5.56,7.91,6.89]]];
+function stats(x,y){ var n=x.length, mx=0,my=0,i; for(i=0;i<n;i++){mx+=x[i];my+=y[i];} mx/=n; my/=n; var sxx=0,syy=0,sxy=0; for(i=0;i<n;i++){ sxx+=(x[i]-mx)*(x[i]-mx); syy+=(y[i]-my)*(y[i]-my); sxy+=(x[i]-mx)*(y[i]-my); } var b=sxy/sxx; return {mx:mx,my:my,vx:sxx/(n-1),vy:syy/(n-1),r:sxy/Math.sqrt(sxx*syy),b:b,a:my-b*mx}; }
+function aDraw(){
+  var st=AQ.map(function(q){return stats(q[1],q[2]);});
+  $('aTable').innerHTML='<thead><tr><th>データ</th><th>xの平均</th><th>yの平均</th><th>xの分散</th><th>yの分散</th><th>相関係数</th><th>回帰直線</th></tr></thead><tbody>'+AQ.map(function(q,i){var s=st[i]; return '<tr><td>'+q[0]+'</td><td>'+s.mx.toFixed(2)+'</td><td>'+s.my.toFixed(2)+'</td><td>'+s.vx.toFixed(2)+'</td><td>'+s.vy.toFixed(2)+'</td><td>'+s.r.toFixed(3)+'</td><td>y = '+s.a.toFixed(2)+' + '+s.b.toFixed(3)+'x</td></tr>';}).join('')+'</tbody>';
+  var hide=$('aHide').checked;
+  $('aFigs').innerHTML=AQ.map(function(q,i){
+    var W=230,H=190,L=26,R=8,Tp=20,B=22, pw=W-L-R, ph=H-Tp-B, s=st[i];
+    function sx(v){ return L+(v-2)/(20-2)*pw; } function sy(v){ return Tp+ph-(v-2)/(14-2)*ph; }
+    var g='<div class="fig"><svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="データ'+q[0]+'の散布図"><text class="big" x="'+L+'" y="14">'+q[0]+'</text>';
+    [4,8,12].forEach(function(t){ g+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(t)+'" y2="'+sy(t)+'"/><text x="'+(L-5)+'" y="'+(sy(t)+4)+'" text-anchor="end">'+t+'</text>'; });
+    [5,10,15,20].forEach(function(t){ g+='<text x="'+sx(t)+'" y="'+(H-6)+'" text-anchor="middle">'+t+'</text>'; });
+    if(hide){ g+='<text x="'+(L+pw/2)+'" y="'+(Tp+ph/2)+'" text-anchor="middle">図は隠しています</text>'; }
+    else {
+      g+='<line x1="'+sx(3)+'" y1="'+sy(s.a+s.b*3)+'" x2="'+sx(20)+'" y2="'+sy(s.a+s.b*20)+'" stroke="var(--s2)" stroke-width="2"/>';
+      q[1].forEach(function(x,k){ g+='<circle cx="'+sx(x)+'" cy="'+sy(q[2][k])+'" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/><circle class="hit" data-tip="x = '+x+'、y = '+q[2][k]+'" cx="'+sx(x)+'" cy="'+sy(q[2][k])+'" r="10"/>'; });
+    }
+    return g+'</svg></div>';
+  }).join('');
+}
+$('aHide').addEventListener('change',aDraw); aDraw();
+
+/* ---------- 5 color ---------- */
+var CAT=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+function cDraw(){
+  var dk=$('cData').value, pk=$('cPal').value, cv=$('cCvd').value, tmin=5.4, tmax=26.9;
+  function q(d){ return dk==='t'?(d.t-tmin)/(tmax-tmin):(dk==='d'?(d.t-TMEAN+11)/22:['冬','春','夏','秋'].indexOf(d.s)/3); }
+  function color(d){
+    var v=q(d);
+    if(pk==='cat') return dk==='s'?SCOL[d.s]:CAT[Math.min(3,Math.floor(v*4))];
+    if(pk==='seq') return 'color-mix(in oklab,var(--s1) '+Math.round(12+88*v)+'%,var(--surface))';
+    if(pk==='div') return v>=0.5?'color-mix(in oklab,var(--s2) '+Math.round((v-0.5)*200)+'%,var(--mid))':'color-mix(in oklab,var(--s1) '+Math.round((0.5-v)*200)+'%,var(--mid))';
+    return 'hsl('+Math.round(250-250*v)+' 85% 50%)';
+  }
+  var W=560,H=150,L=8,cw=(W-16)/12;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:420px" role="img" aria-label="月ごとのマスを色で塗った図"><g'+(cv?' filter="url(#f-'+cv+')"':'')+'>';
+  ROWS.forEach(function(d,i){ s+='<rect x="'+(L+i*cw+1)+'" y="16" width="'+(cw-2)+'" height="84" rx="4" fill="'+color(d)+'"/>'; });
+  s+='</g>';
+  ROWS.forEach(function(d,i){ var lab=dk==='d'?((d.t-TMEAN>0?'+':'')+(d.t-TMEAN).toFixed(1)):(dk==='s'?d.s:d.t.toFixed(1)); s+='<text class="val" x="'+(L+i*cw+cw/2)+'" y="118" text-anchor="middle">'+lab+'</text><text x="'+(L+i*cw+cw/2)+'" y="136" text-anchor="middle">'+d.m+'月</text><rect class="hit" data-tip="'+d.m+'月：平均気温 '+d.t+'℃、年平均との差 '+(d.t-TMEAN>0?'+':'')+(d.t-TMEAN).toFixed(1)+'℃、'+d.s+'" x="'+(L+i*cw)+'" y="10" width="'+cw+'" height="130"/>'; });
+  $('cFig').innerHTML=s+'</svg>';
+  var ok={s:'cat',t:'seq',d:'div'}[dk]===pk, why={
+    's|cat':'季節には大小がないので、色相の違いで区別するのが合っています。',
+    's|seq':'濃淡は大小の順を感じさせます。季節に順位があるように読まれてしまいます。',
+    's|div':'2色に分かれる配色は、基準からの上下を表します。分類には意味のない「中間」ができます。',
+    's|rain':'区別はできますが、色覚によっては隣どうしが似て見えます。4種類なら決まった4色で足ります。',
+    't|cat':'色相には大小の順がありません。どの色が高い気温なのかを凡例なしでは読めません。',
+    't|seq':'濃いほど高い、という1つの決まりで読めます。大小を表すデータに合っています。',
+    't|div':'色が切り替わる中間点が、気温の範囲の真ん中になっています。その値に意味がなければ、境目を誤って読ませます。',
+    't|rain':'虹色は明るさが不規則に上下します。黄色の付近だけが目立ち、大小の順を読み違えやすくなります。',
+    'd|cat':'プラスとマイナス、差の大きさのどちらも色から読めません。',
+    'd|seq':'大小は読めますが、0（年平均と同じ）がどこかが分からなくなります。',
+    'd|div':'年平均より高い月と低い月が色相で分かれ、差の大きさが濃さで読めます。上下のあるデータに合っています。',
+    'd|rain':'0の位置に意味のある色が来ません。上下の境目が読めなくなります。'}[dk+'|'+pk];
+  $('cOut').innerHTML='<b>'+(ok?'合っています。':'合っていません。')+'</b>'+why;
+}
+['cData','cPal','cCvd'].forEach(function(id){ $(id).addEventListener('change',cDraw); });
+cDraw();
+})();
+</script>
+</body>
+</html>
