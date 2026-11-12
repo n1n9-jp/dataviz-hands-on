@@ -36,10 +36,31 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ou
 .wrap{max-width:1000px;margin:0 auto;padding:26px 20px 64px;display:flex;flex-direction:column;gap:20px}
 header h1{font-family:var(--font-display);font-size:clamp(25px,4vw,36px);line-height:1.25;margin:0 0 8px;text-wrap:balance}
 header p{margin:0;max-width:41em;color:var(--ink-2)}
-nav{display:flex;flex-wrap:wrap;gap:8px}
-nav a{font-size:13.5px;line-height:1.3;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;text-decoration:none}
-nav a[aria-current="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-nav a .no{font-variant-numeric:tabular-nums;opacity:.6;margin-right:5px}
+nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+nav a{display:flex;flex-direction:column;gap:2px;font-size:12.5px;line-height:1.5;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:10px;padding:9px 12px;text-decoration:none}
+nav a b{font-size:14px;color:var(--ink)}
+nav a .no{font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-3)}
+nav a .time{color:var(--ink-3);font-size:12px}
+nav a:hover{border-color:var(--ink-3)}
+nav a[aria-current="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+nav a[aria-current="true"] .no::after{content:"　表示中";color:var(--mark);font-weight:700}
+ol.how{margin:14px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 18px;counter-reset:how;max-width:none}
+ol.how li{counter-increment:how;font-size:13.5px;color:var(--ink-2);padding-left:30px;position:relative}
+ol.how li::before{content:counter(how);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+ol.how li b{display:block;color:var(--ink);font-size:14px}
+.stepsbox{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 16px;background:var(--bg);max-width:48em}
+.stepsbox h3{margin:0 0 4px;font-size:13.5px}
+ol.steps{margin:0;padding-left:1.4em;font-size:14px}
+ol.steps li{margin:3px 0}
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pager a{font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 14px;text-decoration:none}
+.pager a.next{border-color:var(--ink);background:var(--ink);color:var(--surface);margin-left:auto}
+.guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.guide div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.guide h3{margin:0 0 4px;font-size:14px}
+.guide dl{margin:0}
+.guide dt{font-size:12px;color:var(--ink-3);margin-top:6px}
+.guide dd{margin:0}
 section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:none}
 section.on{display:block}
 h2{font-family:var(--font-display);font-size:22px;margin:0 0 4px;text-wrap:balance}
@@ -47,7 +68,8 @@ h3{font-size:14.5px;margin:20px 0 6px}
 .aim{margin:0 0 14px;color:var(--ink-2);font-size:14px;max-width:44em}
 .meta{font-size:12.5px;color:var(--ink-3);margin:0 0 10px}
 .note{margin:8px 0 0;color:var(--ink-3);font-size:12.5px;max-width:52em}
-.two{display:grid;grid-template-columns:minmax(240px,300px) 1fr;gap:20px;align-items:start}
+.two{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:20px;align-items:start}
+.two>*{min-width:0}
 .ctl{display:flex;flex-direction:column;gap:10px;font-size:13.5px}
 .ctl label{display:flex;flex-direction:column;gap:3px;font-weight:500}
 .ctl label.inline{flex-direction:row;align-items:center;gap:8px}
@@ -84,28 +106,27 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 .plan div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;background:var(--surface)}
 .plan b{display:block;font-size:13px}
 .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:4px 8px;border-radius:6px;transform:translate(-50%,-125%);display:none;font-variant-numeric:tabular-nums;z-index:3}
-@media (max-width:680px){.two{grid-template-columns:1fr}section{padding:16px 14px}}
+@media (max-width:680px){.two{grid-template-columns:minmax(0,1fr)}section{padding:16px 14px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <h1>データ可視化 体験教材</h1>
-  <p>図を「読む側の知覚」と「作る側の選択」から理解するための、5つの小さな実験です。どれも自分で操作して結果を確かめます。授業では画面に映して進めても、各自の端末で進めても使えます。</p>
-  <div class="plan">
-    <div><b>1 知覚の実験</b>長さ・角度・面積などを見積もり、自分の誤差を測る。目安15分</div>
-    <div><b>2 対応づけ</b>変数を軸・色・大きさに割り当て直す。目安15分</div>
-    <div><b>3 ゆがみ</b>軸や面積の取り方で印象が変わる量を数える。目安15分</div>
-    <div><b>4 要約と図</b>統計量が同じでも中身が違う4つのデータ。目安10分</div>
-    <div><b>5 色</b>データの種類と配色の組み合わせを試す。目安10分</div>
-  </div>
+  <p>図を「読む側の知覚」と「作る側の選択」から理解するための、5つの小さな実験です。説明を読む教材ではなく、自分で動かして結果を確かめる教材です。使い方は次の3つだけです。</p>
+  <ol class="how">
+    <li><b>教材を選ぶ</b>下の5つのカードから選びます。1から順に進めるのがおすすめですが、どれからでも始められます。</li>
+    <li><b>手順どおりに操作する</b>各教材の最初に、番号つきの手順があります。その順に操作してください。</li>
+    <li><b>問いに答える</b>最後の「考えてみよう」で、操作して気づいたことを言葉にします。</li>
+  </ol>
 </header>
-<nav id="nav" aria-label="教材の切り替え"></nav>
+<nav id="nav" aria-label="教材を選ぶ"></nav>
 
 <!-- 1 -->
 <section id="perception" aria-labelledby="h1x">
   <h2 id="h1x">1　知覚の実験：どの表し方なら正確に読めるか</h2>
   <p class="aim">AとBの2つの量が、5種類の表し方で出てきます。BがAの何%かを見積もってください。15問に答えると、表し方ごとの自分の誤差が出ます。</p>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>図のAとBを見比べて、BがAの何%にあたるかを見積もります。</li><li>スライダーを動かし、見積もった値に合わせます。</li><li>「決定して次へ」を押します。直前の問題の正解が出て、次の問題に進みます。</li><li>15問終えると、下の「結果」に表し方ごとの誤差が出ます。</li></ol></div>
   <div class="two">
     <div class="ctl">
       <p class="meta" id="pProg"></p>
@@ -113,6 +134,7 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
       <input type="range" id="pGuess" min="1" max="100" step="1" value="50">
       <button class="btn" id="pNext" type="button">決定して次へ</button>
       <button class="btn ghost" id="pReset" type="button">最初からやり直す</button>
+      <p class="note" id="pFb" aria-live="polite">答えるたびに、ここに直前の問題の正解が出ます。</p>
     </div>
     <div>
       <div class="fig" id="pStage"></div>
@@ -140,6 +162,7 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 <section id="mapping" aria-labelledby="h2x">
   <h2 id="h2x">2　対応づけ：同じデータから別の図を作る</h2>
   <p class="aim">図は「データの列」を「見た目の性質」に割り当てたものです。東京の月ごとの気温と降水量（12行）を使い、割り当てを変えると何が見えるかを確かめます。</p>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>左の5つの欄で、データの列を図のどこに割り当てるかを決めます。まずは初期状態の図を見てください。</li><li>「横の位置」を平均気温に、「縦の位置」を降水量に変えます。</li><li>「図形」を線に変え、1年の動きがどんな形になるかを見ます。</li><li>「色」と「大きさ」にも列を割り当てます。図の下の書き方がどう変わるかも見てください。</li></ol></div>
   <div class="two">
     <div class="ctl">
       <label for="mMark">図形<select id="mMark"><option value="point">点</option><option value="line">線（月の順に結ぶ）</option><option value="bar">棒</option></select></label>
@@ -172,6 +195,7 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 <section id="distortion" aria-labelledby="h3x">
   <h2 id="h3x">3　ゆがみ：印象はどれだけ変えられるか</h2>
   <p class="aim">数値を変えなくても、軸や面積の取り方で印象は変わります。変わった量を数字で確かめます。</p>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>3-1：スライダーを右に動かし、棒の見た目と「ゆがみの比」がどう変わるかを見ます。</li><li>3-2：割り当てる先を「半径」と「面積」で切り替え、見た目の倍率を比べます。</li><li>3-3：2つのスライダーで右の軸を動かし、2本の線の交わり方がどう変わるかを見ます。</li></ol></div>
 
   <h3>3-1　棒グラフの軸をどこから始めるか</h3>
   <div class="two">
@@ -226,6 +250,7 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 <section id="summary" aria-labelledby="h4x">
   <h2 id="h4x">4　要約と図：数値が同じなら中身も同じか</h2>
   <p class="aim">4つのデータは、平均・分散・相関係数・回帰直線がほぼ同じです。授業では先に図を隠し、数値だけを見て中身を予想してから図を開きます。</p>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>「図を隠して数値だけにする」にチェックを入れます。</li><li>表の数値だけを見て、4つのデータがそれぞれどんな形に並んでいるかを予想します。</li><li>チェックを外して図を見ます。予想と比べてください。</li></ol></div>
   <div class="ctl" style="margin-bottom:12px"><label class="inline" for="aHide"><input type="checkbox" id="aHide"> 図を隠して数値だけにする</label></div>
   <div style="overflow-x:auto"><table id="aTable"></table></div>
   <div class="grid4" id="aFigs" style="margin-top:14px"></div>
@@ -245,6 +270,7 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 <section id="color" aria-labelledby="h5x">
   <h2 id="h5x">5　色：データの種類に合う配色を選ぶ</h2>
   <p class="aim">色には、区別する・大小を表す・基準からの上下を表す、という3つの仕事があります。データと配色の組み合わせを変えて、合う場合と合わない場合を見比べます。</p>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>「色で表すデータ」を1つ選びます。</li><li>「配色」を4つとも試し、そのたびに左下に出る判定と理由を読みます。</li><li>「色覚の簡易シミュレーション」を切り替え、色の区別が残るかを確かめます。</li></ol></div>
   <div class="two">
     <div class="ctl">
       <label for="cData">色で表すデータ<select id="cData"><option value="s">季節（分類）</option><option value="t">平均気温（大小）</option><option value="d">年平均との差（上下）</option></select></label>
@@ -269,6 +295,21 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
     <li>色覚のシミュレーションは色変換行列による近似で、実際の見え方を正確に再現するものではありません。</li>
   </ul>
 </section>
+
+<!-- guide -->
+<section id="guide" aria-labelledby="hgx">
+  <h2 id="hgx">授業で使うとき</h2>
+  <p class="aim">教員向けの進め方の例です。どの教材も「先に予想する → 各自で操作する → 結果を確かめる → 言葉にする」の順に進めると、操作が作業で終わりにくくなります。時間は見積もりで、実際の授業で測ったものではありません。</p>
+  <div class="guide">
+    <div><h3>1 知覚の実験（約15分）</h3><dl><dt>先に聞くこと</dt><dd>長さ・角度・面積・色の濃さのうち、どれが一番正確に読めそうか。</dd><dt>進め方</dt><dd>各自で15問に答える。終わったら自分の順位を控える。</dd><dt>まとめ</dt><dd>正確に比べさせたい量は、そろった軸の上の位置で表す。</dd></dl></div>
+    <div><h3>2 対応づけ（約15分）</h3><dl><dt>先に聞くこと</dt><dd>気温と降水量の12か月分を、1枚の図にするならどう描くか。</dd><dt>進め方</dt><dd>手順どおりに割り当てを変え、最後に自分が一番伝わると思う組み合わせを選ぶ。</dd><dt>まとめ</dt><dd>図の種類を選ぶのではなく、列を見た目の性質に割り当てていると考える。</dd></dl></div>
+    <div><h3>3 ゆがみ（約15分）</h3><dl><dt>先に聞くこと</dt><dd>数値を変えずに、差を大きく見せる方法を思いつくか。</dd><dt>進め方</dt><dd>3つの操作を順に試し、ゆがみが最大になる設定を探す。</dd><dt>まとめ</dt><dd>棒は0から始める。面積で表す。目盛りの違う線は重ねずに並べる。</dd></dl></div>
+    <div><h3>4 要約と図（約10分）</h3><dl><dt>先に聞くこと</dt><dd>平均も分散も相関も同じなら、同じデータと言ってよいか。</dd><dt>進め方</dt><dd>教員の画面で図を隠して表だけを見せ、予想させてから図を開く。</dd><dt>まとめ</dt><dd>要約する前に、まず描いて見る。</dd></dl></div>
+    <div><h3>5 色（約10分）</h3><dl><dt>先に聞くこと</dt><dd>気温を色で塗るなら、何色を使うか。</dd><dt>進め方</dt><dd>3つのデータそれぞれで、4つの配色の判定を読む。</dd><dt>まとめ</dt><dd>分類は色相、大小は濃淡、上下は2色。色だけに頼らず値も書く。</dd></dl></div>
+    <div><h3>進めるうえでの注意</h3><dl><dt>結果の共有</dt><dd>回答は保存されません。結果は各自で控えてもらいます。発言を求めず、各自が気づきを書き留めるだけでも成立します。</dd><dt>オンラインの場合</dt><dd>教員が画面を共有して1つ目の操作を見せ、続きを各自の端末で進めてもらいます。</dd><dt>教材へのリンク</dt><dd>各教材のカードを開いた状態のURLを、そのまま学生に送れます。</dd></dl></div>
+  </div>
+</section>
+<div class="pager" id="pager"></div>
 </div>
 <div class="tip" id="tip"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -291,11 +332,13 @@ document.addEventListener('mousemove',function(ev){
 });
 
 /* ---------- tabs (hash routing) ---------- */
-var MODS=[['perception','知覚の実験'],['mapping','対応づけ'],['distortion','ゆがみ'],['summary','要約と図'],['color','色']];
+var MODS=[['perception','知覚の実験','見積もって自分の誤差を測る','約15分'],['mapping','対応づけ','列を軸・色・大きさに割り当てる','約15分'],['distortion','ゆがみ','軸と面積で変わる印象を数える','約15分'],['summary','要約と図','数値が同じ4つのデータを比べる','約10分'],['color','色','データに合う配色を選ぶ','約10分'],['guide','授業で使うとき','進め方と問いかけの例','教員向け']];
 function route(){
   var h=location.hash.replace('#',''), cur=MODS.some(function(m){return m[0]===h;})?h:MODS[0][0];
   MODS.forEach(function(m){ $(m[0]).classList.toggle('on', m[0]===cur); });
-  $('nav').innerHTML=MODS.map(function(m,i){return '<a href="#'+m[0]+'" aria-current="'+(m[0]===cur)+'"><span class="no">'+(i+1)+'</span>'+m[1]+'</a>';}).join('');
+  $('nav').innerHTML=MODS.map(function(m,i){return '<a href="#'+m[0]+'" aria-current="'+(m[0]===cur)+'"><span class="no">'+(m[0]==='guide'?'教員向け':'教材 '+(i+1))+'</span><b>'+m[1]+'</b><span>'+m[2]+'</span>'+(m[0]==='guide'?'':'<span class="time">'+m[3]+'</span>')+'</a>';}).join('');
+  var k=MODS.map(function(m){return m[0];}).indexOf(cur), pv=MODS[k-1], nx=MODS[k+1];
+  $('pager').innerHTML=(pv?'<a href="#'+pv[0]+'">← 前へ：'+pv[1]+'</a>':'')+(nx?'<a class="next" href="#'+nx[0]+'">次へ：'+nx[1]+' →</a>':'');
 }
 window.addEventListener('hashchange',route); route();
 
@@ -313,7 +356,7 @@ var RATIOS=[0.2,0.27,0.35,0.42,0.5,0.58,0.65,0.73,0.8], pst;
 function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function pInit(){
   var tr=[]; ENC_ORDER.forEach(function(e){ shuffle(RATIOS.slice()).slice(0,3).forEach(function(r){ tr.push({enc:e,r:r,seed:Math.random()}); }); });
-  pst={trials:shuffle(tr),i:0,ans:[]}; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult();
+  pst={trials:shuffle(tr),i:0,ans:[]}; $('pFb').textContent='答えるたびに、ここに直前の問題の正解が出ます。'; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult();
 }
 function wedge(cx,cy,R,a0,a1){ var x0=cx+R*Math.cos(a0),y0=cy+R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1); return 'M'+cx+' '+cy+'L'+x0.toFixed(1)+' '+y0.toFixed(1)+'A'+R+' '+R+' 0 '+((a1-a0)>Math.PI?1:0)+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+'Z'; }
 function pDraw(){
@@ -333,7 +376,7 @@ function pDraw(){
 function pResult(){
   var by={}; pst.ans.forEach(function(a){ (by[a.enc]=by[a.enc]||[]).push(Math.abs(a.g-a.r*100)); });
   var rows=ENC_ORDER.filter(function(e){return by[e];}).map(function(e){ var v=by[e]; return {e:e,n:v.length,mae:v.reduce(function(a,b){return a+b;},0)/v.length}; }).sort(function(a,b){return a.mae-b.mae;});
-  var W=520,rh=30,L=170,R=60,H=Math.max(1,rows.length)*rh+14, max=Math.max(10,Math.max.apply(null,rows.map(function(r){return r.mae;}).concat([0])));
+  var W=520,rh=30,L=170,R=96,H=Math.max(1,rows.length)*rh+14, max=Math.max(10,Math.max.apply(null,rows.map(function(r){return r.mae;}).concat([0])));
   var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:640px;min-width:300px" role="img" aria-label="表し方ごとの平均誤差">';
   if(!rows.length) s+='<text x="'+(W/2)+'" y="'+(H/2+4)+'" text-anchor="middle">まだ回答がありません</text>';
   rows.forEach(function(r,i){ var y=8+i*rh, w=(r.mae/max)*(W-L-R); s+='<text x="'+(L-8)+'" y="'+(y+15)+'" text-anchor="end" class="val">'+ENC[r.e]+'</text><rect x="'+L+'" y="'+(y+3)+'" width="'+Math.max(1,w)+'" height="16" rx="3" fill="var(--s1)"/><text class="val" x="'+(L+w+6)+'" y="'+(y+15)+'">'+r.mae.toFixed(1)+' ポイント</text><rect class="hit" data-tip="'+ENC[r.e]+'：'+r.n+'問の平均誤差 '+r.mae.toFixed(1)+' ポイント" x="0" y="'+y+'" width="'+W+'" height="'+rh+'"/>'; });
@@ -343,7 +386,7 @@ function pResult(){
   } else { $('pOut').textContent='15問に答えると、ここに自分の結果と解説が出ます。回答済み：'+pst.ans.length+'問'; }
 }
 $('pGuess').addEventListener('input',function(ev){ $('pVal').textContent=ev.target.value; });
-$('pNext').addEventListener('click',function(){ if(pst.i>=pst.trials.length) return; var t=pst.trials[pst.i]; pst.ans.push({enc:t.enc,r:t.r,g:+$('pGuess').value}); pst.i++; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult(); });
+$('pNext').addEventListener('click',function(){ if(pst.i>=pst.trials.length) return; var t=pst.trials[pst.i]; var g=+$('pGuess').value, tr=Math.round(t.r*100); pst.ans.push({enc:t.enc,r:t.r,g:g}); pst.i++; $('pFb').textContent='直前の問題（'+ENC[t.enc]+'）：正解は '+tr+'%、あなたの答えは '+g+'%、差は '+Math.abs(g-tr)+' ポイントでした。'; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult(); });
 $('pReset').addEventListener('click',pInit);
 pInit();
 

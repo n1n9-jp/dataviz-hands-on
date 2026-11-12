@@ -11,6 +11,13 @@
 | 3 ゆがみ | 棒グラフの基線、円の半径と面積、二軸の重ね方を動かす | [#distortion](https://n1n9-jp.github.io/dataviz-hands-on/#distortion) |
 | 4 要約と図 | アンスコムの4つのデータ | [#summary](https://n1n9-jp.github.io/dataviz-hands-on/#summary) |
 | 5 色 | データの種類と配色の組み合わせ、色覚の簡易シミュレーション | [#color](https://n1n9-jp.github.io/dataviz-hands-on/#color) |
+| 授業で使うとき | 教員向けの進め方と問いかけの例 | [#guide](https://n1n9-jp.github.io/dataviz-hands-on/#guide) |
+
+## 使い方
+
+1. ページ上部のカードから教材を選びます
+2. 各教材の最初にある番号つきの「手順」のとおりに操作します
+3. 最後の「考えてみよう」で、気づいたことを言葉にします
 
 ## 注意
 
