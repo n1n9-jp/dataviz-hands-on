@@ -88,6 +88,15 @@ svg .axis{stroke:var(--ink-3);stroke-width:1}
 svg .hit{fill:transparent}
 .out{font-size:14px;margin:10px 0 0;padding:10px 12px;border-left:3px solid var(--mark);background:var(--bg);border-radius:0 8px 8px 0;max-width:46em}
 .out b{font-variant-numeric:tabular-nums}
+.ans{margin-top:10px;border:2px solid var(--mark);border-radius:10px;padding:12px 16px;background:var(--surface)}
+.ans.wait{border:1px dashed var(--ink-3);color:var(--ink-2);font-size:13.5px}
+.ans:empty{display:none}
+.ans-label{font-size:12px;font-weight:700;color:var(--mark);letter-spacing:.04em}
+.ans-main{font-size:18px;font-weight:700;line-height:1.3}
+.ans-main b{font-size:34px;font-variant-numeric:tabular-nums}
+.ans-sub{font-size:14px;color:var(--ink-2);margin:2px 0 8px}
+.ans-sub b{color:var(--ink);font-variant-numeric:tabular-nums}
+.ans-key{display:flex;gap:18px;font-size:12px;color:var(--ink-2)}
 .big-num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
 ul.q{margin:0;padding-left:1.3em;max-width:46em}
 ul.q li{margin:4px 0}
@@ -126,22 +135,22 @@ th{font-weight:700;color:var(--ink-2);font-size:12px}
 <section id="perception" aria-labelledby="h1x">
   <h2 id="h1x">1　知覚の実験：どの表し方なら正確に読めるか</h2>
   <p class="aim">AとBの2つの量が、5種類の表し方で出てきます。BがAの何%かを見積もってください。15問に答えると、表し方ごとの自分の誤差が出ます。</p>
-  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>図のAとBを見比べて、BがAの何%にあたるかを見積もります。</li><li>スライダーを動かし、見積もった値に合わせます。</li><li>「決定して次へ」を押します。直前の問題の正解が出て、次の問題に進みます。</li><li>15問終えると、下の「結果」に表し方ごとの誤差が出ます。</li></ol></div>
+  <div class="stepsbox"><h3>手順</h3><ol class="steps"><li>図のAとBを見比べて、BがAの何%にあたるかを見積もります。</li><li>スライダーを動かし、見積もった値に合わせます。</li><li>「答え合わせをする」を押します。図のすぐ下の枠に、正解と自分の答えとの差が出ます。</li><li>「次の問題へ」を押して進みます。</li><li>15問終えると、下の「結果」に表し方ごとの誤差が出ます。</li></ol></div>
   <div class="two">
     <div class="ctl">
       <p class="meta" id="pProg"></p>
       <label for="pGuess">BはAの <span><b class="big-num" id="pVal">50</b> %</span></label>
       <input type="range" id="pGuess" min="1" max="100" step="1" value="50">
-      <button class="btn" id="pNext" type="button">決定して次へ</button>
+      <button class="btn" id="pNext" type="button">答え合わせをする</button>
       <button class="btn ghost" id="pReset" type="button">最初からやり直す</button>
-      <p class="note" id="pFb" aria-live="polite">答えるたびに、ここに直前の問題の正解が出ます。</p>
     </div>
     <div>
       <div class="fig" id="pStage"></div>
       <p class="note" id="pEnc"></p>
+      <div class="ans wait" id="pAns" aria-live="polite"></div>
     </div>
   </div>
-  <h3>結果：表し方ごとの平均誤差</h3>
+  <h3 id="pResH">結果：表し方ごとの平均誤差</h3>
   <div class="fig" id="pResult"></div>
   <div class="out" id="pOut">15問に答えると、ここに自分の結果と解説が出ます。</div>
   <h3>考えてみよう</h3>
@@ -356,13 +365,15 @@ var RATIOS=[0.2,0.27,0.35,0.42,0.5,0.58,0.65,0.73,0.8], pst;
 function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function pInit(){
   var tr=[]; ENC_ORDER.forEach(function(e){ shuffle(RATIOS.slice()).slice(0,3).forEach(function(r){ tr.push({enc:e,r:r,seed:Math.random()}); }); });
-  pst={trials:shuffle(tr),i:0,ans:[]}; $('pFb').textContent='答えるたびに、ここに直前の問題の正解が出ます。'; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult();
+  pst={trials:shuffle(tr),i:0,ans:[],phase:'answer'}; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pAns(); pResult();
 }
 function wedge(cx,cy,R,a0,a1){ var x0=cx+R*Math.cos(a0),y0=cy+R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1); return 'M'+cx+' '+cy+'L'+x0.toFixed(1)+' '+y0.toFixed(1)+'A'+R+' '+R+' 0 '+((a1-a0)>Math.PI?1:0)+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+'Z'; }
 function pDraw(){
   var done=pst.i>=pst.trials.length;
-  $('pProg').textContent=done?'15問すべて終わりました':('第 '+(pst.i+1)+' 問 / 全 '+pst.trials.length+' 問');
-  $('pNext').disabled=done; $('pGuess').disabled=done;
+  var review=pst.phase==='review';
+  $('pProg').textContent=done?'15問すべて終わりました':('第 '+(pst.i+1)+' 問 / 全 '+pst.trials.length+' 問'+(review?'（答え合わせ）':''));
+  $('pNext').disabled=done; $('pGuess').disabled=done||review;
+  $('pNext').textContent=review?(pst.i+1>=pst.trials.length?'結果を見る':'次の問題へ'):'答え合わせをする';
   if(done){ $('pStage').innerHTML='<svg viewBox="0 0 360 210" width="100%" style="max-width:520px;margin:0 auto"><text class="big" x="180" y="105" text-anchor="middle">おつかれさまでした。下に結果があります。</text></svg>'; $('pEnc').textContent=''; return; }
   var t=pst.trials[pst.i], r=t.r, s='<svg viewBox="0 0 360 210" width="100%" style="max-width:520px;margin:0 auto" role="img" aria-label="AとBの2つの量">', f='fill="var(--s1)"';
   if(t.enc==='pos'){ s+='<line class="axis" x1="60" x2="300" y1="170" y2="170"/><rect x="100" y="30" width="46" height="140" '+f+'/><rect x="214" y="'+(170-140*r)+'" width="46" height="'+(140*r)+'" '+f+'/>'; }
@@ -386,7 +397,27 @@ function pResult(){
   } else { $('pOut').textContent='15問に答えると、ここに自分の結果と解説が出ます。回答済み：'+pst.ans.length+'問'; }
 }
 $('pGuess').addEventListener('input',function(ev){ $('pVal').textContent=ev.target.value; });
-$('pNext').addEventListener('click',function(){ if(pst.i>=pst.trials.length) return; var t=pst.trials[pst.i]; var g=+$('pGuess').value, tr=Math.round(t.r*100); pst.ans.push({enc:t.enc,r:t.r,g:g}); pst.i++; $('pFb').textContent='直前の問題（'+ENC[t.enc]+'）：正解は '+tr+'%、あなたの答えは '+g+'%、差は '+Math.abs(g-tr)+' ポイントでした。'; $('pGuess').value=50; $('pVal').textContent='50'; pDraw(); pResult(); });
+function pAns(){
+  var el=$('pAns');
+  if(pst.i>=pst.trials.length){ el.className='ans'; el.innerHTML=''; return; }
+  if(pst.phase!=='review'){ el.className='ans wait'; el.textContent='「答え合わせをする」を押すと、この枠に正解が出ます。'; return; }
+  var a=pst.ans[pst.ans.length-1], tr=Math.round(a.r*100), d=Math.abs(a.g-tr), W=420, L=16, R=16, pw=W-L-R;
+  function x(v){ return L+v/100*pw; }
+  var svg='<svg viewBox="0 0 '+W+' 60" width="100%" style="max-width:520px" role="img" aria-label="0%から100%の目盛り上の、正解 '+tr+'% とあなたの答え '+a.g+'%">'+
+    '<line class="axis" x1="'+L+'" x2="'+(W-R)+'" y1="32" y2="32"/>'+[0,25,50,75,100].map(function(t){return '<line class="axis" x1="'+x(t)+'" x2="'+x(t)+'" y1="28" y2="36"/><text x="'+x(t)+'" y="54" text-anchor="middle">'+t+'%</text>';}).join('')+
+    '<line x1="'+x(Math.min(a.g,tr))+'" x2="'+x(Math.max(a.g,tr))+'" y1="32" y2="32" stroke="var(--mark)" stroke-width="4"/>'+
+    '<circle cx="'+x(a.g)+'" cy="32" r="6.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>'+
+    '<path d="M'+x(tr)+' 25l-7 -13h14z" fill="var(--mark)"/></svg>';
+  el.className='ans';
+  el.innerHTML='<div class="ans-label">答え合わせ</div><div class="ans-main">正解は <b>'+tr+'%</b></div><div class="ans-sub">あなたの答えは <b>'+a.g+'%</b>、差は <b>'+d+'ポイント</b>'+(d<=3?'。ほぼ正確です。':'')+'</div>'+svg+'<div class="ans-key"><span>▼ 正解</span><span>○ あなたの答え</span></div>';
+}
+$('pNext').addEventListener('click',function(){
+  if(pst.i>=pst.trials.length) return;
+  if(pst.phase==='answer'){ var t=pst.trials[pst.i]; pst.ans.push({enc:t.enc,r:t.r,g:+$('pGuess').value}); pst.phase='review'; }
+  else { pst.phase='answer'; pst.i++; $('pGuess').value=50; $('pVal').textContent='50'; }
+  pDraw(); pAns(); pResult();
+  if(pst.i>=pst.trials.length) $('pResH').scrollIntoView({behavior:'smooth',block:'start'});
+});
 $('pReset').addEventListener('click',pInit);
 pInit();
 
